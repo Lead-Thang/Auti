@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Breadcrumb from "@/components/Breadcrumb"
 import {
   DollarSign,
   TrendingUp,
@@ -83,12 +84,22 @@ export default function EarningsPage() {
   if (!earningsData) {
     return (
       <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-8 h-8 text-purple-600" />
-            Earnings
-          </h1>
-          <p className="text-gray-600">Track your income and earnings</p>
+        <div className="space-y-4">
+          <Breadcrumb 
+            items={[
+              { label: "Home", href: "/dashboard" },
+              { label: "Wallet", href: "/dashboard/payments" },
+              { label: "Earnings", href: "/dashboard/payments/earnings" }
+            ]} 
+          />
+          
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <TrendingUp className="w-8 h-8 text-purple-600" />
+              Earnings
+            </h1>
+            <p className="text-gray-600">Track your income and earnings</p>
+          </div>
         </div>
 
         <Card>
@@ -104,12 +115,22 @@ export default function EarningsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <TrendingUp className="w-8 h-8 text-purple-600" />
-          Earnings
-        </h1>
-        <p className="text-gray-600">Track your income and earnings analytics</p>
+      <div className="space-y-4">
+        <Breadcrumb 
+          items={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Wallet", href: "/dashboard/payments" },
+            { label: "Earnings", href: "/dashboard/payments/earnings" }
+          ]} 
+        />
+        
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <TrendingUp className="w-8 h-8 text-purple-600" />
+            Earnings
+          </h1>
+          <p className="text-gray-600">Track your income and earnings analytics</p>
+        </div>
       </div>
 
       {/* Stats Cards */}

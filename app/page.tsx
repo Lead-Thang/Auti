@@ -8,11 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Badge } from "../components/ui/badge"
 import { Input } from "../components/ui/input"
 import { createClient } from "@/lib/supabase/client"
-import { Session } from "@supabase/supabase-js"
+
 import Link from "next/link"
 import Image from "next/image"
 import { ThemeAwareLogo } from "@/components/theme-aware-logo"
 import { AnimatedStatsCard } from "@/components/animated-stats-card"
+import { useUser } from "@clerk/nextjs";
 import {
   ArrowRight,
   Sparkles,
@@ -103,14 +104,7 @@ const testimonials = [
 ]
 
 export default function LandingPage() {
-  const supabase = createClient()
-  const [session, setSession] = useState<Session | null>(null)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
-  }, [])
+  const { user, isSignedIn, isLoaded } = useUser();
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -217,7 +211,7 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {session ? (
+              {isLoaded && isSignedIn ? (
                 <Link href="/dashboard">
                   <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                     Dashboard
@@ -328,7 +322,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              {session ? (
+              {isLoaded && isSignedIn ? (
                 <Link href="/dashboard">
                   <div className="relative inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 p-0.5 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl hover:shadow-purple-500/30">
                     <Button
@@ -388,7 +382,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Link key={index} href={session ? feature.href : "/auth/signup"}>
+              <Link key={index} href={isLoaded && isSignedIn ? feature.href : "/auth/signup"}>
                 <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-slate-800 hover:scale-105 cursor-pointer">
                   <CardHeader className="pb-4">
                     <div
@@ -450,7 +444,7 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              {session ? (
+              {isLoaded && isSignedIn ? (
                 <Link href="/dashboard/assistant">
                   <Button
                     size="lg"
@@ -577,7 +571,7 @@ export default function LandingPage() {
                   Join thousands of entrepreneurs who've accelerated their growth with AI-powered tools.
                 </p>
 
-                {session ? (
+                {isLoaded && isSignedIn ? (
                   <Link href="/dashboard">
                     <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 shadow-lg px-8 py-4 text-lg">
                       <Rocket className="w-6 h-6 mr-3" />

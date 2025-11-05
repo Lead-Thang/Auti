@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -17,6 +16,7 @@ import { Separator } from "../../../components/ui/separator"
 import { Alert, AlertDescription } from "../../../components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card"
 import { ThemeToggle } from "../../../components/theme-toggle"
+import { useSignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
@@ -27,6 +27,8 @@ export default function SignInPage() {
 
   const router = useRouter()
 
+  const { isLoaded, signIn } = useSignIn();
+
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
 
   const handleSubmit = async (e: FormEvent) => {
@@ -35,54 +37,106 @@ export default function SignInPage() {
     setError("")
 
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) {
-        setError("Invalid credentials. Please try again.")
-      } else {
-        router.push("/dashboard")
+      if (!isLoaded) {
+        setError("Authentication system is not loaded yet. Please try again.");
+        setIsLoading(false);
+        return;
       }
-    } catch {
-      setError("An error occurred. Please try again.")
+
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      switch (result.status) {
+        case 'complete':
+          router.push('/dashboard');
+          break;
+        case 'needs_first_factor':
+          // Handle two-factor authentication if enabled
+          setError("Additional authentication required");
+          break;
+        case 'needs_second_factor':
+          // Handle two-factor authentication if enabled
+          setError("Additional authentication required");
+          break;
+        case 'needs_new_password': // For password reset scenarios
+          // Redirect to password reset page if your app has one
+          setError("Password update required. Please contact support or reset your password.");
+          break;
+        default:
+          setError("Invalid credentials. Please try again.");
+          break;
+      }
+    } catch (err: any) {
+      // Check if it's a Clerk-specific error
+      if (err.errors && err.errors.length > 0) {
+        const clerkError = err.errors[0];
+        if (clerkError.code === 'form_password_incorrect') {
+          setError("Incorrect password. Please try again.");
+        } else if (clerkError.code === 'form_identifier_not_found') {
+          setError("No account found with this email. Please check your email or sign up.");
+        } else if (clerkError.code === 'verification_failed') {
+          setError("Verification failed. Please try signing in again.");
+        } else if (clerkError.code === 'verification_expired') {
+          setError("Verification has expired. Please try signing in again.");
+        } else if (clerkError.code === 'verification_not_found') {
+          setError("Verification not found. The account may already be verified or needs different verification.");
+        } else if (clerkError.code === 'verification_max_attempts_reached') {
+          setError("Too many verification attempts. Please try again later.");
+        } else if (clerkError.code === 'verification_strategy_not_allowed') {
+          setError("Verification strategy not allowed for this account. The account may already be verified or needs a different verification method.");
+        } else {
+          setError(clerkError.message || "An authentication error occurred. Please try again.");
+        }
+      } else {
+        setError("An error occurred during sign in. Please try again.");
+      }
+      console.error("Sign in error:", err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setError("")
+    if (!isLoaded) {
+      setError("Authentication system is not loaded yet. Please try again.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
 
     try {
-      const supabase = createClient()
-      
-      // Use a more robust redirect URL configuration
-      const redirectTo = `${window.location.origin}/auth/callback`
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo
-        }
-      })
-
-      if (error) {
-        setError(`Google sign-in failed: ${error.message || error}`)
-        console.error("Google OAuth error:", error)
-      } else if (data?.url) {
-        window.location.href = data.url
-      } else {
-        setError("Unexpected error. Try again.")
+      // Check if user is already signed in
+      if (signIn.status === 'complete') {
+        // User is already signed in, redirect to dashboard
+        router.push('/dashboard');
+        return;
       }
-    } catch (err) {
-      setError("Google sign-in failed. Please try again.")
-      console.error("Google OAuth exception:", err)
+
+      // Start the OAuth flow with Google
+      await signIn.authenticateWithRedirect({
+        strategy: 'oauth_google',
+        redirectUrl: '/auth/sso-callback',
+        redirectUrlComplete: '/dashboard',
+      });
+    } catch (err: any) {
+      // Handle the specific "already signed in" error
+      if (err.errors && err.errors.length > 0) {
+        const clerkError = err.errors[0];
+        if (clerkError.code === 'session_exists') {
+          // User is already signed in, redirect to dashboard
+          router.push('/dashboard');
+          return;
+        }
+        setError(clerkError.message || "Google sign-in failed. Please try again.");
+      } else {
+        setError("Google sign-in failed. Please try again.");
+      }
+      console.error("Google OAuth exception:", err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -209,6 +263,8 @@ export default function SignInPage() {
           </div>
         </CardContent>
       </Card>
+      {/* Clerk CAPTCHA widget container - required for Smart CAPTCHA */}
+      <div id="clerk-captcha" style={{ display: 'none' }}></div>
     </div>
   )
 }

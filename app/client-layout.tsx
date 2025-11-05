@@ -1,10 +1,8 @@
 "use client"
 
 import type React from "react"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "../components/ui/toaster"
-import { SessionProvider } from "next-auth/react"
-import { ErrorLogger } from "@/components/error-logger"
+import { Providers } from "@/components/clerk-provider"
 
 export default function ClientLayout({
   children,
@@ -12,12 +10,9 @@ export default function ClientLayout({
   children: React.ReactNode
 }) {
   return (
-    <SessionProvider>
-      <ThemeProvider defaultTheme="system" storageKey="Autilance-theme">
-        <ErrorLogger />
-        <div className="min-h-screen bg-background text-foreground">{children}</div>
-        <Toaster />
-      </ThemeProvider>
-    </SessionProvider>
+    <Providers>
+      <div className="min-h-screen bg-background text-foreground">{children}</div>
+      <Toaster />
+    </Providers>
   )
 }

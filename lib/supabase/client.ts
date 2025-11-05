@@ -15,8 +15,8 @@ export function createClient() {
     // Add additional configuration options to handle edge cases
     auth: {
       flowType: 'pkce',
-      persistSession: true,
-      detectSessionInUrl: true,
+      persistSession: false, // Disable session persistence when using Clerk
+      detectSessionInUrl: false, // Disable URL session detection
     }
   })
 }

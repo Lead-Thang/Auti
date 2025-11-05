@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Breadcrumb from "@/components/Breadcrumb"
 import {
   Wallet,
   Plus,
@@ -245,100 +246,110 @@ export default function EscrowPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Wallet className="w-8 h-8 text-purple-600" />
-            Escrow Payments
-          </h1>
-          <p className="text-gray-600">
-            Secure milestone-based payments with escrow protection
-          </p>
+      <div className="space-y-4">
+        <Breadcrumb 
+          items={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Wallet", href: "/dashboard/payments" },
+            { label: "Escrow", href: "/dashboard/payments/escrow" }
+          ]} 
+        />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Wallet className="w-8 h-8 text-purple-600" />
+              Escrow Payments
+            </h1>
+            <p className="text-gray-600">
+              Secure milestone-based payments with escrow protection
+            </p>
+          </div>
+
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Escrow
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Create Escrow Transaction</DialogTitle>
+                <DialogDescription>
+                  Hold funds securely until milestone completion
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Freelancer ID</label>
+                  <Input
+                    placeholder="Enter freelancer ID"
+                    value={newEscrow.freelancerId}
+                    onChange={(e) => setNewEscrow({ ...newEscrow, freelancerId: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount</label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={newEscrow.amountCents / 100}
+                    onChange={(e) => setNewEscrow({ ...newEscrow, amountCents: Math.round(parseFloat(e.target.value) * 100) })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Currency</label>
+                  <Select
+                    value={newEscrow.currency}
+                    onValueChange={(value) => setNewEscrow({ ...newEscrow, currency: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="GBP">GBP</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Contract ID (Optional)</label>
+                  <Input
+                    placeholder="Enter contract ID"
+                    value={newEscrow.contractId}
+                    onChange={(e) => setNewEscrow({ ...newEscrow, contractId: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Milestone ID (Optional)</label>
+                  <Input
+                    placeholder="Enter milestone ID"
+                    value={newEscrow.milestoneId}
+                    onChange={(e) => setNewEscrow({ ...newEscrow, milestoneId: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateEscrow}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600"
+                  >
+                    Create Escrow
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Escrow
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Create Escrow Transaction</DialogTitle>
-              <DialogDescription>
-                Hold funds securely until milestone completion
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Freelancer ID</label>
-                <Input
-                  placeholder="Enter freelancer ID"
-                  value={newEscrow.freelancerId}
-                  onChange={(e) => setNewEscrow({ ...newEscrow, freelancerId: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Amount</label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={newEscrow.amountCents / 100}
-                  onChange={(e) => setNewEscrow({ ...newEscrow, amountCents: Math.round(parseFloat(e.target.value) * 100) })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Currency</label>
-                <Select
-                  value={newEscrow.currency}
-                  onValueChange={(value) => setNewEscrow({ ...newEscrow, currency: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Contract ID (Optional)</label>
-                <Input
-                  placeholder="Enter contract ID"
-                  value={newEscrow.contractId}
-                  onChange={(e) => setNewEscrow({ ...newEscrow, contractId: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Milestone ID (Optional)</label>
-                <Input
-                  placeholder="Enter milestone ID"
-                  value={newEscrow.milestoneId}
-                  onChange={(e) => setNewEscrow({ ...newEscrow, milestoneId: e.target.value })}
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleCreateEscrow}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600"
-                >
-                  Create Escrow
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Stats */}

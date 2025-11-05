@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,61 +13,41 @@ import { Loader2, User, AtSign } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Image from "next/image"
+import { useUser } from "@clerk/nextjs";
 
 export default function CompleteProfilePage() {
   const [displayName, setDisplayName] = useState("")
   const [userHandle, setUserHandle] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [error, setError] = useState("")
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter()
-  const supabase = createClient()
 
   // Check if user is authenticated
   useEffect(() => {
-    const checkUser = async () => {
-      setIsCheckingAuth(true)
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (!isLoaded) return;
 
-        if (authError) {
-          console.error("Auth error:", authError)
-          router.push("/auth/signup")
-          return
-        }
-
-        if (!user) {
-          router.push("/auth/signup")
-          return
-        }
-
-        // Check if user has already completed their profile
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('display_name')
-          .eq('id', user.id)
-          .single()
-
-        if (userError) {
-          console.error("User query error:", userError)
-          // If there's an error checking profile, allow them to complete it
-          return
-        }
-
-        if (userData?.display_name) {
-          // If user already has a display name, redirect to dashboard
-          router.push("/dashboard")
-        }
-      } catch (err) {
-        console.error("Unexpected error during auth check:", err)
-        router.push("/auth/signup")
-      } finally {
-        setIsCheckingAuth(false)
-      }
+    if (!isSignedIn) {
+      router.push("/auth/signup");
+      return;
     }
 
-    checkUser()
-  }, [router])
+    // Check if user profile is already completed
+    // You can customize this check based on your needs
+    // For example, checking if firstName/lastName are filled in Clerk user
+    if (user?.unsafeMetadata?.displayName) {
+      router.push("/dashboard");
+    } else {
+      // Set initial display name from Clerk user if available
+      if (user?.firstName && user?.lastName) {
+        setDisplayName(`${user.firstName} ${user.lastName}`);
+      } else if (user?.firstName) {
+        setDisplayName(user.firstName);
+      } else if (user?.lastName) {
+        setDisplayName(user.lastName);
+      }
+    }
+  }, [isLoaded, isSignedIn, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,37 +55,33 @@ export default function CompleteProfilePage() {
     setError("")
 
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
+      if (!isSignedIn || !user) {
         setError("Authentication error. Please try signing in again.")
         setIsLoading(false)
         return
       }
 
-      // Update the users table with profile information
-      const { error } = await supabase
-        .from('users')
-        .update({
-          display_name: displayName,
+      // Update user profile in Clerk
+      await user.update({
+        firstName: displayName.split(' ')[0],
+        lastName: displayName.split(' ').slice(1).join(' ') || undefined,
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          displayName: displayName,
           handle: userHandle ? `@${userHandle.replaceAll('@', '')}` : null
-        })
-        .eq('id', user.id)
+        }
+      });
 
-      if (error) {
-        setError(error.message || "Failed to update profile. Please try again.")
-      } else {
-        router.push("/dashboard")
-      }
-    } catch (err) {
+      router.push("/dashboard")
+    } catch (err: any) {
       console.error("Profile completion error:", err)
-      setError("An unexpected error occurred. Please try again.")
+      setError(err.message || "An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (isCheckingAuth) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-accent/5">
         <div className="flex items-center space-x-2">

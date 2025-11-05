@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Breadcrumb from "@/components/Breadcrumb"
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -132,21 +133,31 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <DollarSign className="w-8 h-8 text-purple-600" />
-            Transactions
-          </h1>
-          <p className="text-gray-600">
-            View and manage all your payment transactions
-          </p>
-        </div>
+      <div className="space-y-4">
+        <Breadcrumb 
+          items={[
+            { label: "Home", href: "/dashboard" },
+            { label: "Wallet", href: "/dashboard/payments" },
+            { label: "Transactions", href: "/dashboard/payments/transactions" }
+          ]} 
+        />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <DollarSign className="w-8 h-8 text-purple-600" />
+              Transactions
+            </h1>
+            <p className="text-gray-600">
+              View and manage all your payment transactions
+            </p>
+          </div>
 
-        <Button variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -1,10 +1,10 @@
 "use client"
 
-import { ChevronRight, type LucideIcon, Home } from "lucide-react"
+import { ChevronRight, type LucideIcon, Home, SquareTerminal, CheckSquare, ShoppingCart, Users, DollarSign, Store, Bot, Trophy, BarChart3, MessageSquare, Calendar, Settings2, Search, Sparkles, Star, Briefcase, Shield, Wallet, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../components/ui/collapsible"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -14,14 +14,12 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "../components/ui/sidebar"
-
-import { DollarSign, Store, Users, ShoppingCart, SquareTerminal, CheckSquare, Bot, Trophy } from "lucide-react"
+} from "@/components/ui/sidebar"
 
 export const navMain = [
   {
     title: "Home",
-    url: "/home",
+    url: "/",
     icon: Home,
   },
   {
@@ -50,20 +48,92 @@ export const navMain = [
     icon: CheckSquare,
     items: [
       {
-        title: "Browse JDs",
+        title: "Browse",
         url: "/dashboard/jd",
       },
       {
-        title: "My JDs",
-        url: "/dashboard/jd?tab=my-jds",
+        title: "My Applications",
+        url: "/dashboard/jd/my-applications",
       },
       {
-        title: "Verifications",
-        url: "/dashboard/jd?tab=verifications",
+        title: "Saved Jobs",
+        url: "/dashboard/jd/saved",
+      },
+    ],
+  },
+  {
+    title: "Marketplace",
+    url: "/dashboard/marketplace",
+    icon: ShoppingCart,
+    items: [
+      {
+        title: "Browse Products",
+        url: "/dashboard/marketplace",
       },
       {
-        title: "Create JD",
-        url: "/dashboard/jd?tab=create",
+        title: "My Orders",
+        url: "/dashboard/marketplace/orders",
+      },
+      {
+        title: "Selling",
+        url: "/dashboard/marketplace/selling",
+      },
+    ],
+  },
+  {
+    title: "Community",
+    url: "/dashboard/community",
+    icon: Users,
+    items: [
+      {
+        title: "Forums",
+        url: "/dashboard/community/forums",
+      },
+      {
+        title: "Groups",
+        url: "/dashboard/community/groups",
+      },
+      {
+        title: "Events",
+        url: "/dashboard/community/events",
+      },
+    ],
+  },
+  {
+    title: "Payments",
+    url: "/dashboard/payments",
+    icon: DollarSign,
+    items: [
+      {
+        title: "Wallet",
+        url: "/dashboard/payments/wallet",
+      },
+      {
+        title: "Transactions",
+        url: "/dashboard/payments/transactions",
+      },
+      {
+        title: "Payouts",
+        url: "/dashboard/payments/payouts",
+      },
+    ],
+  },
+  {
+    title: "Store",
+    url: "/dashboard/store",
+    icon: Store,
+    items: [
+      {
+        title: "My Store",
+        url: "/dashboard/store",
+      },
+      {
+        title: "Products",
+        url: "/dashboard/store/products",
+      },
+      {
+        title: "Orders",
+        url: "/dashboard/store/orders",
       },
     ],
   },
@@ -77,24 +147,9 @@ export const navMain = [
         url: "/dashboard/assistant",
       },
       {
-        title: "History",
-        url: "/dashboard/assistant/history",
+        title: "Documents",
+        url: "/dashboard/assistant/documents",
       },
-      {
-        title: "Settings",
-        url: "/dashboard/assistant/settings",
-      },
-    ],
-  },
-  {
-    title: "Earn",
-    url: "/dashboard/make-money",
-    icon: DollarSign,
-    items: [
-      { title: "Investments", url: "/dashboard/investment" },
-      { title: "Partnerships", url: "/dashboard/partnerships" },
-      { title: "Selling & Buying", url: "/dashboard/marketplace" },
-      { title: "Store Management", url: "/dashboard/storefront" },
     ],
   },
   {
@@ -103,104 +158,57 @@ export const navMain = [
     icon: Trophy,
     items: [
       {
-        title: "My Certificates",
+        title: "My Certifications",
         url: "/dashboard/certifications",
       },
       {
-        title: "Available Programs",
-        url: "/dashboard/certifications/programs",
-      },
-      {
-        title: "Create Program",
-        url: "/dashboard/certifications/create",
+        title: "Earn Certifications",
+        url: "/dashboard/certifications/earn",
       },
     ],
   },
-  {
-    title: "Tasks & Projects",
-    url: "/dashboard/tasks",
-    icon: CheckSquare,
-    items: [
-      {
-        title: "My Tasks",
-        url: "/dashboard/tasks",
-      },
-      {
-        title: "Projects",
-        url: "/dashboard/tasks/projects",
-      },
-      {
-        title: "Team Tasks",
-        url: "/dashboard/tasks/team",
-      },
-    ],
-  },
-  // ... other nav items
 ]
 
-export function NavMain({
-  items = navMain,
-  className,
-}: {
-  items?: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
-  className?: string
-}) {
+export function NavMain({ items }: { items: typeof navMain }) {
   const pathname = usePathname()
 
   return (
-    <SidebarGroup className={className}>
+    <SidebarGroup>
       <SidebarMenu>
-        {items.map((item) => {
-          const isActive = pathname === item.url || (pathname !== null && pathname.startsWith(item.url + "/"))
-
-          return (
-            <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
-              <SidebarMenuItem>
-                <div className="flex items-center">
-                  <SidebarMenuButton asChild tooltip={item.title} className="flex-1 justify-start hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-                    <Link href={item.url} className={isActive ? "bg-sidebar-accent" : ""}>
-                      {item.icon && <item.icon className="shrink-0" />}
-                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  {item.items?.length ? (
-                    <div className="ml-auto pl-4 group-data-[collapsible=icon]:hidden">
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
-                          <ChevronRight className="transition-transform duration-200 data-[state=open]:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                    </div>
-                  ) : null}
-                </div>
-                {item.items?.length ? (
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url} className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${pathname === subItem.url ? "bg-sidebar-accent" : ""}`}>
-                              <span>{subItem.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                ) : null}
-              </SidebarMenuItem>
-            </Collapsible>
-          )
-        })}
+        {items.map((item) => (
+          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.url}>
+                  <Link href={item.url}>
+                    {item.icon && <item.icon className="size-4 shrink-0" />}
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    {item.items?.length ? (
+                      <>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                      </>
+                    ) : null}
+                  </Link>
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              {item.items?.length ? (
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton asChild>
+                          <Link href={subItem.url} className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${pathname === subItem.url ? "bg-sidebar-accent" : ""}`}>
+                            <span>{subItem.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              ) : null}
+            </SidebarMenuItem>
+          </Collapsible>
+        ))}
       </SidebarMenu>
     </SidebarGroup>
   )

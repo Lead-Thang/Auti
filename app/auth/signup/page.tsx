@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +16,7 @@ import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Image from "next/image"; // 引入 Image 组件
 import { Eye, EyeOff } from "lucide-react"; // 引入眼睛图标
+import { useSignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   const [name, setName] = useState("")
@@ -26,6 +26,7 @@ export default function SignUpPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { isLoaded, signUp } = useSignUp(); // Move this to the top
   const router = useRouter()
 
   // Check for error in URL query parameters on component mount
@@ -55,65 +56,121 @@ export default function SignUpPage() {
       return
     }
 
+    // For Clerk, we'll handle email/password sign-up using the signUp instance
     try {
-      // Simulate account creation
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!isLoaded) {
+        setError("Authentication system is not loaded yet. Please try again.");
+        setIsLoading(false);
+        return;
+      }
 
-      // After successful signup, sign in the user
-      const supabase = createClient()
-      const { data, error } = await supabase.auth.signUp({
-        email,
+      // Start the sign-up process with Clerk
+      const result = await signUp.create({
+        emailAddress: email,
         password,
-        options: {
-          data: {
-            full_name: name
-          }
-        }
-      })
+        firstName: name.split(' ')[0], // Using first part of name as first name
+        lastName: name.split(' ').slice(1).join(' ') || undefined, // Rest as last name if exists
+      });
 
-      if (error) {
-        setError(error.message || "Account creation failed. Please try again.")
-        } else if (data.user) {
-          router.push("/auth/complete-profile")
+      // Handle different sign-up statuses
+      if (result.status === 'complete') {
+        // If sign-up is complete, the user might be automatically signed in
+        router.push('/dashboard');
+      } else if (result.status === 'missing_requirements') {
+        // Handle missing requirements - check what's needed
+        if (result.verifications) {
+          // Prepare to verify the email if required
+          await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+          // Redirect to verification page
+          router.push("/auth/verify-email");
         }
-     } catch (error) {
-       console.error("Signup error:", error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : undefined)
-       setError("An unexpected error occurred during signup. Please try again.")
-     } finally {
-       setIsLoading(false)
-     }
+      } else if (result.verifications) {
+        // Prepare to verify the email if required
+        await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+        // Redirect to verification page
+        router.push("/auth/verify-email");
+      } else {
+        // For other statuses, try to prepare verification anyway as fallback
+        await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+        // Redirect to verification page
+        router.push("/auth/verify-email");
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      let errorMessage = "Account creation failed. Please try again.";
+      
+      if (error.errors && error.errors.length > 0) {
+        const clerkError = error.errors[0];
+        if (clerkError.code === 'form_password_incorrect') {
+          errorMessage = "Password does not meet requirements.";
+        } else if (clerkError.code === 'form_identifier_exists') {
+          errorMessage = "An account with this email already exists. Please sign in instead.";
+        } else if (clerkError.code === 'verification_failed') {
+          errorMessage = "Verification setup failed. Please try again.";
+        } else if (clerkError.code === 'verification_not_found') {
+          errorMessage = "Verification not found. Please try creating your account again.";
+        } else if (clerkError.code === 'verification_max_attempts_reached') {
+          errorMessage = "Too many verification attempts. Please try again later.";
+        } else {
+          errorMessage = clerkError.message || errorMessage;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
 const handleGoogleSignUp = async () => {
-  setIsLoading(true);
-  try {
-    const supabase = createClient()
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/complete-profile`
-        }
-      });
+  if (!isLoaded) {
+    setError("Authentication system is not loaded yet. Please try again.");
+    return;
+  }
 
-    if (error) {
-      console.error("Google sign-up error:", error);
-      setError(error.message || "Google sign-up failed");
-      } else if (data.url) {
-        router.push(data.url);
+  setIsLoading(true);
+  setError(""); // Clear any previous errors
+
+  try {
+    // Check if user is already signed in
+    if (signUp.status === 'complete') {
+      // User is already signed in, redirect to dashboard
+      router.push('/dashboard');
+      return;
+    }
+
+    // Start the OAuth flow with Google
+    await signUp.authenticateWithRedirect({
+      strategy: 'oauth_google',
+      redirectUrl: '/auth/sso-callback',
+      redirectUrlComplete: '/dashboard', // or wherever you want to redirect after signup
+    });
+  } catch (error: any) {
+    // Handle the specific "already signed in" error
+    if (error.errors && error.errors.length > 0) {
+      const clerkError = error.errors[0];
+      if (clerkError.code === 'session_exists') {
+        // User is already signed in, redirect to dashboard
+        router.push('/dashboard');
+        return;
       }
-    } catch (error) {
+      setError(clerkError.message || "Failed to sign up with Google. Please try again.");
+    } else {
       // Log the error for debugging
       console.error("Google OAuth signup failed:", {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         timestamp: new Date().toISOString()
-      })
+      });
 
-       // Set user-facing error message
-       setError("Failed to sign up with Google. Please check your connection and try again.")
-     } finally {
-     setIsLoading(false);
-   }
+      // Set user-facing error message
+      setError("Failed to sign up with Google. Please check your connection and try again.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
 }
 
   const [showPassword, setShowPassword] = useState(false); // 新增状态管理
@@ -159,23 +216,23 @@ const handleGoogleSignUp = async () => {
               <>
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
-                    fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
                   />
                   <path
-                    fill="currentColor"
                     d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
                   />
                   <path
-                    fill="currentColor"
                     d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
                   />
                   <path
-                    fill="currentColor"
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
                   />
                 </svg>
-                Continue with Google
+                Sign up with Google
               </>
             )}
           </Button>
@@ -321,6 +378,8 @@ const handleGoogleSignUp = async () => {
           </div>
         </CardContent>
       </Card>
+      {/* Clerk CAPTCHA widget container - required for Smart CAPTCHA */}
+      <div id="clerk-captcha" style={{ display: 'none' }}></div>
     </div>
   )
 }

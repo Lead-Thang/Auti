@@ -2,7 +2,7 @@ import type React from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "../components/ui/toaster"
-import { Providers } from "../components/Providers"
+import { Providers } from "@/components/clerk-provider" // Changed to Clerk provider that includes ThemeProvider
 import { FloatingAIChat } from "../components/floating-ai-chat"
 import { metadata, viewport } from "./metadata"
 import { Analytics } from "@vercel/analytics/react"

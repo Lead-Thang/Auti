@@ -31,13 +31,13 @@ export async function GET() {
     
     if (postsError) {
       console.error('Error fetching posts:', postsError)
-      return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
     
     return NextResponse.json(posts)
   } catch (error) {
     console.error('Error fetching feed posts:', error)
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -82,12 +82,12 @@ export async function POST(request: Request) {
     
     if (postError) {
       console.error('Error creating post:', postError)
-      return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
     
     return NextResponse.json(post)
   } catch (error) {
     console.error('Error creating post:', error)
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

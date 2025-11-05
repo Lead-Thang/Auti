@@ -1,0 +1,459 @@
+openapi: 3.0.3
+info:
+  title: Autilance API
+  description: API for Autilance e-commerce platform with AI-powered features
+  version: 1.0.0
+  contact:
+    name: Autilance Support
+    email: support@autilance.com
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://autilance.com/api
+    description: Production server
+
+paths:
+  /dropshipping:
+    get:
+      summary: Get dropshipping suppliers and products
+      description: Retrieve suppliers and products for dropshipping integration
+      parameters:
+        - name: action
+          in: query
+          required: false
+          description: Action to perform (suppliers, products, or default)
+          schema:
+            type: string
+            enum: [suppliers, products]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suppliers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Supplier'
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+    post:
+      summary: Perform dropshipping actions
+      description: Connect to suppliers or sync products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [connect, sync]
+                  description: Action to perform
+                supplierId:
+                  type: string
+                  description: ID of supplier (for connect action)
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  suppliers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Supplier'
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid action
+        '404':
+          description: Supplier not found
+
+  /seo:
+    get:
+      summary: Get SEO analysis and suggestions
+      description: Retrieve SEO analysis data and content suggestions
+      parameters:
+        - name: type
+          in: query
+          required: false
+          description: Type of data to retrieve (analysis, suggestions, optimize-content)
+          schema:
+            type: string
+            enum: [analysis, suggestions, optimize-content]
+        - name: storeId
+          in: query
+          required: false
+          description: Store ID to analyze
+          schema:
+            type: string
+        - name: pageUrl
+          in: query
+          required: false
+          description: Page URL for specific analysis
+          schema:
+            type: string
+        - name: contentType
+          in: query
+          required: false
+          description: Content type for optimization
+          schema:
+            type: string
+        - name: currentTitle
+          in: query
+          required: false
+          description: Current page title
+          schema:
+            type: string
+        - name: currentDescription
+          in: query
+          required: false
+          description: Current page description
+          schema:
+            type: string
+        - name: currentContent
+          in: query
+          required: false
+          description: Current page content
+          schema:
+            type: string
+        - name: keywords
+          in: query
+          required: false
+          description: Keywords to optimize for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/SeoAnalysisData'
+                      - $ref: '#/components/schemas/ContentSuggestions'
+                  analysis:
+                    $ref: '#/components/schemas/SeoAnalysisData'
+                  suggestions:
+                    $ref: '#/components/schemas/ContentSuggestions'
+                  timestamp:
+                    type: string
+                    format: date-time
+    post:
+      summary: Perform SEO actions
+      description: Analyze pages, generate meta tags, or optimize content
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               type: object
+               properties:
+                 action:
+                   type: string
+                   enum: [analyze-page, generate-meta-tags, optimize-content]
+                   description: Action to perform
+                 data:
+                   oneOf:
+                     - $ref: '#/components/schemas/SeoAnalyzePageData'
+                     - $ref: '#/components/schemas/SeoGenerateMetaTagsData'
+                     - $ref: '#/components/schemas/SeoOptimizeContentData'
+                   discriminator:
+                     propertyName: action
+                     mapping:
+                       analyze-page: '#/components/schemas/SeoAnalyzePageData'
+                       generate-meta-tags: '#/components/schemas/SeoGenerateMetaTagsData'
+                       optimize-content: '#/components/schemas/SeoOptimizeContentData'
+               required:
+                 - action
+                 - data
+      responses:
+        '200':
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  analysis:
+                    $ref: '#/components/schemas/PageAnalysis'
+                  metaTags:
+                    $ref: '#/components/schemas/MetaTags'
+                  original:
+                    type: string
+                  optimized:
+                    type: string
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Invalid action
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the supplier
+        name:
+          type: string
+          description: Name of the supplier
+        connected:
+          type: boolean
+          description: Whether the supplier is connected
+      required:
+        - id
+        - name
+        - connected
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the product
+        name:
+          type: string
+          description: Name of the product
+        supplier:
+          type: string
+          description: Supplier name
+        price:
+          type: number
+          format: float
+          description: Cost price of the product
+        retailPrice:
+          type: number
+          format: float
+          description: Retail price of the product
+        stock:
+          type: integer
+          description: Available stock
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to product image
+        status:
+          type: string
+          description: Stock status (available, out-of-stock, low-stock)
+      required:
+        - id
+        - name
+        - supplier
+        - price
+        - retailPrice
+        - stock
+        - imageUrl
+        - status
+
+    SeoAnalysisData:
+      type: object
+      properties:
+        storeId:
+          type: string
+          description: ID of the store analyzed
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageAnalysis'
+        overallScore:
+          type: integer
+          description: Overall SEO score from 0-100
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: List of recommendations to improve SEO
+      required:
+        - storeId
+        - pages
+        - overallScore
+        - recommendations
+
+    PageAnalysis:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Page ID
+        url:
+          type: string
+          format: uri
+          description: URL of the page
+        title:
+          type: string
+          description: Current page title
+        description:
+          type: string
+          description: Current page description
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Target keywords
+        metaTags:
+          $ref: '#/components/schemas/MetaTags'
+        score:
+          type: integer
+          description: SEO score from 0-100
+        suggestions:
+          type: array
+          items:
+            type: string
+          description: Suggestions for improvement
+      required:
+        - id
+        - url
+        - title
+        - description
+        - keywords
+        - metaTags
+        - score
+        - suggestions
+
+    MetaTags:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Page title tag
+        description:
+          type: string
+          description: Meta description
+        ogTitle:
+          type: string
+          description: Open Graph title
+        ogDescription:
+          type: string
+          description: Open Graph description
+        ogType:
+          type: string
+          description: Open Graph type
+        ogImage:
+          type: string
+          format: uri
+          description: Open Graph image URL
+        twitterCard:
+          type: string
+          description: Twitter card type
+        twitterTitle:
+          type: string
+          description: Twitter title
+        twitterDescription:
+          type: string
+          description: Twitter description
+        twitterImage:
+          type: string
+          format: uri
+          description: Twitter image URL
+
+    ContentSuggestions:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Unique identifier for the suggestion
+              type:
+                type: string
+                description: Type of content suggestion
+              title:
+                type: string
+                description: Title of the suggestion
+              content:
+                type: string
+                description: Detailed suggestion content
+              suggestions:
+                type: array
+                items:
+                  type: string
+                description: List of specific suggestions
+            required:
+              - id
+              - type
+        total:
+          type: integer
+          description: Total number of suggestions available
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Number of suggestions per page
+      required:
+        - data
+           - content
+           - suggestions
+
+     SeoAnalyzePageData:
+       type: object
+       properties:
+         url:
+           type: string
+           format: uri
+           description: URL of the page to analyze
+         html:
+           type: string
+           description: Optional HTML content of the page
+       required:
+         - url
+
+     SeoGenerateMetaTagsData:
+       type: object
+       properties:
+         title:
+           type: string
+           description: Base title for meta tag generation
+         description:
+           type: string
+           description: Base description for meta tag generation
+         keywords:
+           type: array
+           items:
+             type: string
+           description: Optional keywords for meta tag generation
+       required:
+         - title
+         - description
+
+     SeoOptimizeContentData:
+       type: object
+       properties:
+         content:
+           type: string
+           description: Content to optimize
+         targetAudience:
+           type: string
+           description: Optional target audience for optimization
+       required:
+         - content

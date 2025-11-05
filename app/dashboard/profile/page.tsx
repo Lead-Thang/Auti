@@ -6,11 +6,12 @@ import { Badge } from "../../../components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar"
 import { Separator } from "../../../components/ui/separator"
 import { useUser } from "../../../hooks/use-user"
-import { MapPin, Globe, Calendar, Award, Star, Eye, Share, Edit, Mail, CheckCircle } from "lucide-react"
+import { MapPin, Globe, Calendar, Award, Star, Eye, Share, Edit, Mail, CheckCircle, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { EditProfileModal } from "@/components/edit-profile-modal"
+import Link from "next/link"
 
 interface Certification {
   id: string

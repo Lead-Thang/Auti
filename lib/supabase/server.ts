@@ -15,16 +15,12 @@ export async function createClient() {
 
   const supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: true,
+      persistSession: false, // Disable auto-session management when using Clerk
     }
   });
 
-  try {
-    // Optionally refresh session to ensure current user data
-    await supabase.auth.getUser();
-  } catch (error) {
-    console.warn('Error getting user:', error);
-  }
+  // Don't call auth methods that might trigger token refresh when using Clerk
+  // Return the client for database operations only
 
   return supabase;
 }

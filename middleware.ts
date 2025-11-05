@@ -1,17 +1,16 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export async function middleware(request: NextRequest) {
-  try {
-    // Use the Supabase middleware utility to handle session updates
-    const { response } = await updateSession(request)
-    return response
-  } catch (error) {
-    console.error('Error in middleware:', error)
-    // Return a safe response if middleware fails
-    return new Response('Internal Server Error', { status: 500 })
+// Define which routes are protected
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/admin(.*)',
+])
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
   }
-}
+})
 
 export const config = {
   matcher: [
