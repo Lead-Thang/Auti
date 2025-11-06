@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -14,7 +13,7 @@ export function SiteHeader() {
   const isSidebarCollapsed = sidebarState === "collapsed"
 
   const [localUser, setLocalUser] = React.useState({
-    name: "User",
+    name: "Guest",
     email: "",
     avatar: "/avatars/shadcn.jpg",
   });
@@ -41,7 +40,7 @@ export function SiteHeader() {
 
   return (
     <header 
-      className={`group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear w-full border-border/50 bg-background supports-[backdrop-filter]:bg-background sticky top-0 z-40 ${
+      className={`group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear w-full border-border/50 bg-background supports-[backdrop-filter]:bg-background sticky mb-4 top-0 z-40 ${
         isSidebarCollapsed ? 'h-12' : 'h-14'
       }`}
     >

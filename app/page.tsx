@@ -200,20 +200,27 @@ export default function LandingPage() {
         }
       `}</style>
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+      <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-white/10 backdrop-blur-lg rounded-full px-6 py-3 shadow-xl border border-white/20">
+          <div className="flex items-center justify-between gap-8">
             <div className="flex items-center gap-3">
-              <ThemeAwareLogo alt="Autilance Logo" width={40} height={40} />
-              <span className="text-2xl font-bold text-white">
-                Autilance
+              <Image src="/logo.png" alt="Autilance Logo" width={30} height={30} />
+              <span className="text-[20px] font-bold text-white">
+                Auti
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-px bg-white/30"></div>
+              <Link href="/community" className="text-white hover:text-blue-300 text-sm px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors">
+                Community
+              </Link>
+              <Link href="/careers" className="text-white hover:text-blue-300 text-sm px-3 py-1.5 rounded-full mr-36 hover:bg-white/10 transition-colors">
+                Careers
+              </Link>
               {isLoaded && isSignedIn ? (
                 <Link href="/dashboard">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-4 py-2 text-sm">
                     Dashboard
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -221,10 +228,10 @@ export default function LandingPage() {
               ) : (
                 <div className="flex items-center gap-3">
                   <Link href="/auth/signin">
-                    <Button variant="ghost">Sign In</Button>
+                    <Button variant="ghost" className="text-white hover:bg-white/20 rounded-full px-4 py-2 text-sm">Sign In</Button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-4 py-2 text-sm">
                       Get Started
                     </Button>
                   </Link>
@@ -236,7 +243,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-10 lg:py-100">
+      <section className="relative overflow-hidden py-32 lg:py-100">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-600/20 via-purple-600/10 to-transparent" />
         {/* Raining Stars Effect with Trails */}
         <div className="absolute inset-0 overflow-hidden">
@@ -279,12 +286,12 @@ export default function LandingPage() {
           ))}
         </div>
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <Image src="/logo.png" alt="Autilance Logo" width={85} height={85} className="mx-auto mb-14 mt-6" />
+          <div className="text-center mb-14">
+            <Image src="/logo.png" alt="Autilance Logo" width={75} height={75} className="mx-auto mb-24 mt-14" />
 
-            <div className="mb-12 h-32 flex items-center justify-center">
+            <div className="mb-16 h-32 flex items-center justify-center">
               <div className="transition-opacity duration-1000 ease-in-out">
-                <h1 className="text-[50px] lg:text-[60px] font-bold">
+                <h1 className="text-[70px] lg:text-[85px] font-bold">
                   {currentPhrase === 0 ? (
                     <>
                       <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Earn</span>
@@ -303,7 +310,7 @@ export default function LandingPage() {
                     </>
                   )}
                 </h1>
-                <p className="text-[50px] lg:text-[60px] font-bold">
+                <p className="text-[70px] lg:text-[85px] font-bold">
                   {currentPhrase === 0 ? (
                     <span className="text-white">with Autilance!</span>
                   ) : currentPhrase === 1 ? (
@@ -317,19 +324,19 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <p className="text-[16px] lg:text-2xl text-gray-600 dark:text-gray-300 mb-8 mx-auto leading-relaxed readable-text">
+            <p className="text-[16px] lg:text-[20px] text-white/60 dark:text-gray-300 mb-6 mt-24 mx-auto leading-relaxed readable-text">
                Revolutionize the way you earn! Find jobs or recruit partners, be a freelancer or a client, buy & sell products,...
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-24 items-center">
               {isLoaded && isSignedIn ? (
                 <Link href="/dashboard">
                   <div className="relative inline-block rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 p-0.5 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl hover:shadow-purple-500/30">
                     <Button
                       size="lg"
-                      className="bg-slate-900 text-white shadow-xl transition-all duration-300 px-8 py-4 text-lg rounded-md relative z-10"
+                      className="bg-slate-900 text-white shadow-xl transition-all duration-300 px-8 py-4 text-[20px] rounded-md relative z-10"
                     >
-                      <Rocket className="w-6 h-6 mr-3" />
+                      <Rocket className="w-7 h-7 mr-3" />
                       Go to Dashboard
                     </Button>
                   </div>

@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { type User as ClerkUser } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 
 // Create a supabase client that works with Clerk authentication
 export const createClerkSupabaseClient = (
-  clerkUser: ClerkUser | null,
-  accessToken: string | null
+  clerkUser: ClerkUser | null
 ) => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -18,13 +18,23 @@ export const createClerkSupabaseClient = (
       persistSession: false,
       autoRefreshToken: false,
     },
+    global: {
+      fetch: async (url, options = {}) => {
+        const { getToken } = await auth()
+        const clerkToken = await getToken()
+        
+        const headers = new Headers(options?.headers)
+        if (clerkToken) {
+          headers.set('Authorization', `Bearer ${clerkToken}`)
+        }
+        
+        return fetch(url, {
+          ...options,
+          headers,
+        })
+      },
+    },
   })
-
-  // If we have a Clerk user and access token, set the Supabase session
-  if (clerkUser && accessToken) {
-    // Set the access token for Supabase
-    supabase.auth.setAuth(accessToken)
-  }
 
   return supabase
 }

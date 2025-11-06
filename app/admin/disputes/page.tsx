@@ -1,26 +1,36 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '../../../components/ui/table';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '../../../components/ui/select';
-import { Search, Eye, AlertTriangle, Clock, CheckCircle, XCircle, DollarSign, User, Shield, MessageSquare } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../../components/ui/dialog';
+import { useToast } from '../../../hooks/use-toast';
+import { Search, Eye, AlertTriangle, Clock, CheckCircle, XCircle, DollarSign, User, Shield, MessageSquare, Loader2 } from 'lucide-react';
 
 // Mock data for disputes
 const mockDisputes = [
@@ -33,12 +43,17 @@ const mockDisputes = [
 ];
 
 export default function DisputesPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [disputes, setDisputes] = useState(mockDisputes);
   const [filteredDisputes, setFilteredDisputes] = useState(mockDisputes);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showMediationModal, setShowMediationModal] = useState(false);
+  const [selectedDisputeId, setSelectedDisputeId] = useState<string | null>(null);
+   const [escalatingDisputes, setEscalatingDisputes] = useState<Map<string, boolean>>(new Map());
 
   useEffect(() => {
     let result = disputes;
@@ -73,6 +88,8 @@ export default function DisputesPage() {
         return 'bg-red-100 text-red-800';
       case 'in-progress':
         return 'bg-yellow-100 text-yellow-800';
+      case 'escalated':
+        return 'bg-orange-100 text-orange-800';
       case 'resolved':
         return 'bg-green-100 text-green-800';
       case 'closed':
@@ -93,6 +110,114 @@ export default function DisputesPage() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleMediationTools = (disputeId: string) => {
+    setSelectedDisputeId(disputeId);
+    setShowMediationModal(true);
+  };
+
+  const handleEscalateDispute = async (disputeId: string) => {
+    setEscalatingDisputes(prev => new Map(prev.set(disputeId, true)));
+    try {
+      const response = await fetch(`/api/dispute/${disputeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'escalate' }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to escalate dispute');
+      }
+
+      // Update local state
+      setDisputes(prev => prev.map(dispute =>
+        dispute.id === disputeId
+          ? { ...dispute, status: 'escalated' }
+          : dispute
+      ));
+
+      toast({
+        title: "Dispute Escalated",
+        description: "The dispute has been successfully escalated to senior mediation.",
+      });
+    } catch (error) {
+      console.error('Error escalating dispute:', error);
+      toast({
+        title: "Escalation Failed",
+        description: error instanceof Error ? error.message : "Failed to escalate the dispute. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setEscalatingDisputes(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(disputeId);
+        return newMap;
+      });
+    }
+  };
+
+  const handleStartChatMediation = () => {
+    if (!selectedDisputeId) return;
+
+    // Close mediation modal
+    setShowMediationModal(false);
+
+    // Navigate to chat mediation page with dispute context
+    router.push(`/admin/disputes/${selectedDisputeId}/chat-mediation`);
+
+    toast({
+      title: "Starting Chat Mediation",
+      description: `Opening chat mediation for dispute ${selectedDisputeId}`,
+    });
+  };
+
+  const handleReviewEvidence = () => {
+    if (!selectedDisputeId) return;
+
+    // Close mediation modal
+    setShowMediationModal(false);
+
+    // Navigate to evidence review page
+    router.push(`/admin/disputes/${selectedDisputeId}/evidence`);
+
+    toast({
+      title: "Reviewing Evidence",
+      description: `Opening evidence review for dispute ${selectedDisputeId}`,
+    });
+  };
+
+  const handleContactParties = () => {
+    if (!selectedDisputeId) return;
+
+    // Close mediation modal
+    setShowMediationModal(false);
+
+    // Navigate to contact parties page
+    router.push(`/admin/disputes/${selectedDisputeId}/contact`);
+
+    toast({
+      title: "Contacting Parties",
+      description: `Opening contact interface for dispute ${selectedDisputeId}`,
+    });
+  };
+
+  const handleProposeResolution = () => {
+    if (!selectedDisputeId) return;
+
+    // Close mediation modal
+    setShowMediationModal(false);
+
+    // Navigate to resolution proposal page
+    router.push(`/admin/disputes/${selectedDisputeId}/resolution`);
+
+    toast({
+      title: "Proposing Resolution",
+      description: `Opening resolution proposal for dispute ${selectedDisputeId}`,
+    });
   };
 
   const getDisputeTypeColor = (type: string) => {
@@ -117,10 +242,6 @@ export default function DisputesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Dispute Resolution</h1>
-        <div className="flex space-x-2">
-          <Button variant="outline">Mediation Tools</Button>
-          <Button>Escalate Dispute</Button>
-        </div>
       </div>
 
       {/* Summary Cards */}
@@ -189,13 +310,14 @@ export default function DisputesPage() {
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
+               <SelectContent>
+                 <SelectItem value="all">All Statuses</SelectItem>
+                 <SelectItem value="open">Open</SelectItem>
+                 <SelectItem value="in-progress">In Progress</SelectItem>
+                 <SelectItem value="escalated">Escalated</SelectItem>
+                 <SelectItem value="resolved">Resolved</SelectItem>
+                 <SelectItem value="closed">Closed</SelectItem>
+               </SelectContent>
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[180px]">
@@ -273,18 +395,28 @@ export default function DisputesPage() {
                     <TableCell>${dispute.amount.toFixed(2)}</TableCell>
                     <TableCell>{dispute.submitDate}</TableCell>
                     <TableCell>{dispute.assignedTo}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <MessageSquare className="h-4 w-4 mr-1" />
-                          Mediate
-                        </Button>
-                      </div>
-                    </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleMediationTools(dispute.id)}>
+                            <Shield className="h-4 w-4 mr-1" />
+                            Mediation Tools
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEscalateDispute(dispute.id)}
+                            disabled={escalatingDisputes.get(dispute.id) || dispute.status === 'escalated'}
+                          >
+                            {escalatingDisputes.get(dispute.id) && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                            <AlertTriangle className="h-4 w-4 mr-1" />
+                            Escalate
+                          </Button>
+                        </div>
+                      </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -314,6 +446,73 @@ export default function DisputesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Mediation Tools Modal */}
+      <Dialog open={showMediationModal} onOpenChange={(open) => {
+        setShowMediationModal(open);
+        if (!open) setSelectedDisputeId(null);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Mediation Tools</DialogTitle>
+            <DialogDescription>
+              Use these tools to facilitate dispute resolution between parties.
+              {selectedDisputeId && <span className="block mt-1 font-medium">Dispute ID: {selectedDisputeId}</span>}
+            </DialogDescription>
+          </DialogHeader>
+          {!selectedDisputeId ? (
+            <div className="text-center py-4">
+              <p className="text-red-600">No dispute selected. Please select a dispute first.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <Button
+                 variant="outline"
+                 className="h-20 flex flex-col items-center justify-center"
+                 onClick={handleStartChatMediation}
+                 aria-label={`Start chat mediation for dispute ${selectedDisputeId}`}
+               >
+                 <MessageSquare className="h-6 w-6 mb-2" />
+                 <span>Start Chat Mediation</span>
+               </Button>
+               <Button
+                 variant="outline"
+                 className="h-20 flex flex-col items-center justify-center"
+                 onClick={handleReviewEvidence}
+                 aria-label={`Review evidence for dispute ${selectedDisputeId}`}
+               >
+                 <Shield className="h-6 w-6 mb-2" />
+                 <span>Review Evidence</span>
+               </Button>
+               <Button
+                 variant="outline"
+                 className="h-20 flex flex-col items-center justify-center"
+                 onClick={handleContactParties}
+                 aria-label={`Contact parties for dispute ${selectedDisputeId}`}
+               >
+                 <User className="h-6 w-6 mb-2" />
+                 <span>Contact Parties</span>
+               </Button>
+               <Button
+                 variant="outline"
+                 className="h-20 flex flex-col items-center justify-center"
+                 onClick={handleProposeResolution}
+                 aria-label={`Propose resolution for dispute ${selectedDisputeId}`}
+               >
+                 <CheckCircle className="h-6 w-6 mb-2" />
+                 <span>Propose Resolution</span>
+               </Button>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowMediationModal(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

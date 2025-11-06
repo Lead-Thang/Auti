@@ -51,3 +51,53 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Failed to fetch dispute" }, { status: 500 })
   }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const supabase = await createClient()
+    const { data: { session }, error } = await supabase.auth.getSession()
+
+    if (!session?.user || error) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id } = await params
+    const disputeId = id
+    const body = await req.json()
+    const { action } = body
+
+    if (action !== 'escalate') {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    }
+
+    // Check if user is a moderator/admin
+    const userRole = (session.user as any).role
+    const isModerator = userRole === "MODERATOR" || userRole === "ADMIN"
+
+    if (!isModerator) {
+      return NextResponse.json({ error: "Unauthorized - Moderator access required" }, { status: 403 })
+    }
+
+    // Update dispute status to escalated
+    const updatedDispute = await db.dispute.update({
+      where: { id: disputeId },
+      data: {
+        status: 'escalated',
+      },
+    })
+
+    // Log audit
+    await db.auditLog.create({
+      data: {
+        action: "dispute_escalated",
+        actorId: session.user.id,
+        payload: { disputeId },
+      },
+    })
+
+    return NextResponse.json(updatedDispute)
+  } catch (error) {
+    console.error("Error escalating dispute:", error)
+    return NextResponse.json({ error: "Failed to escalate dispute" }, { status: 500 })
+  }
+}

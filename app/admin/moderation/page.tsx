@@ -248,26 +248,26 @@ export default function ModerationPage() {
                     </TableCell>
                     <TableCell>{item.flaggedBy}</TableCell>
                     <TableCell>{item.date}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          Review
-                        </Button>
-                        {item.status === 'pending' && (
-                          <>
-                            <Button variant="outline" size="sm" className="text-green-600 border-green-600">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button variant="outline" size="sm" className="text-red-600 border-red-600">
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex space-x-2">
+                         <Button variant="ghost" size="sm" aria-label={`Review item ${item.id}`}>
+                           <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
+                           Review
+                         </Button>
+                         {item.status === 'pending' && (
+                           <>
+                             <Button variant="outline" size="sm" className="text-green-600 border-green-600" aria-label={`Approve item ${item.id}`}>
+                               <CheckCircle className="h-4 w-4 mr-1" aria-hidden="true" />
+                               Approve
+                             </Button>
+                             <Button variant="outline" size="sm" className="text-red-600 border-red-600" aria-label={`Reject item ${item.id}`}>
+                               <XCircle className="h-4 w-4 mr-1" aria-hidden="true" />
+                               Reject
+                             </Button>
+                           </>
+                         )}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

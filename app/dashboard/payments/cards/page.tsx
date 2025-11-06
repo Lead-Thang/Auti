@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -68,6 +69,7 @@ const mockCards: PaymentCard[] = [
 ]
 
 export default function CardsPage() {
+  const router = useRouter()
   const [cards, setCards] = useState<PaymentCard[]>(mockCards)
   const [showCardNumbers, setShowCardNumbers] = useState(false)
   const [cardToDelete, setCardToDelete] = useState<string | null>(null)
@@ -199,10 +201,15 @@ export default function CardsPage() {
                   <CreditCard className="w-5 h-5 text-purple-600" />
                   {card.brand}
                 </CardTitle>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                 <div className="flex gap-2">
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     onClick={() => router.push(`/dashboard/payments/cards/${card.id}/edit`)}
+                     aria-label="Edit card"
+                   >
+                     <Edit className="w-4 h-4" />
+                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm"

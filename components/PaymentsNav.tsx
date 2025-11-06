@@ -4,26 +4,36 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  Wallet, 
-  CreditCard, 
-  History, 
-  Settings, 
-  Send, 
-  TrendingUp, 
-  DollarSign, 
-  Shield, 
+import {
+  Wallet,
+  CreditCard,
+  History,
+  Settings,
+  Send,
+  TrendingUp,
+  DollarSign,
+  Shield,
   Menu,
   X
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useUser } from "@/hooks/use-user"
 
 interface NavItem {
   title: string
   href: string
   icon: React.ElementType
   badge?: number
+}
+
+interface PaymentsNavProps {
+  user?: {
+    name?: string
+    email?: string
+    avatar?: string
+    initials?: string
+  }
 }
 
 const navItems: NavItem[] = [
@@ -36,17 +46,30 @@ const navItems: NavItem[] = [
   { title: "Settings", href: "/dashboard/payments/settings", icon: Settings },
 ]
 
-export default function PaymentsNav() {
+export default function PaymentsNav({ user: propUser }: PaymentsNavProps = {}) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const { user: contextUser } = useUser()
+
+  // Use prop user if provided, otherwise use context user
+  const user = propUser || contextUser
+
+  // Generate initials from name if not provided
+  const getInitials = (name?: string) => {
+    if (!name) return "GU"
+    const parts = name.trim().split(" ")
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+  }
 
   return (
     <>
       {/* Mobile menu button */}
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         size="icon"
         className="lg:hidden"
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
         onClick={() => setSidebarOpen(!sidebarOpen)}
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -70,7 +93,7 @@ export default function PaymentsNav() {
             <ul className="space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname === item.href
+                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"))
                 
                 return (
                   <li key={item.href}>
@@ -99,19 +122,19 @@ export default function PaymentsNav() {
             </ul>
           </nav>
 
-          {/* User Profile */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src="/avatars/01.png" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">John Doe</p>
-                <p className="text-sm text-gray-600">john@example.com</p>
-              </div>
-            </div>
-          </div>
+           {/* User Profile */}
+           <div className="p-4 border-t border-gray-200">
+             <div className="flex items-center gap-3">
+               <Avatar>
+                 <AvatarImage src={user?.avatar} />
+                 <AvatarFallback>{(user as any)?.initials || getInitials(user?.name)}</AvatarFallback>
+               </Avatar>
+               <div>
+                 <p className="font-medium">{user?.name || "Guest"}</p>
+                 <p className="text-sm text-gray-600">{user?.email || ""}</p>
+               </div>
+             </div>
+           </div>
         </div>
       </aside>
 

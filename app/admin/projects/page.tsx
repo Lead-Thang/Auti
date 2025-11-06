@@ -23,7 +23,7 @@ import {
 import { Search, Eye, Edit, FileText, Clock, DollarSign, User, TrendingUp, TrendingDown } from 'lucide-react';
 
 // Mock data for projects
-const mockProjects = [
+const mockProjects: Project[] = [
   { id: '#PROJ-001', title: 'Website Redesign', job: '#JOB-001', client: 'Tech Startup', freelancer: 'John Developer', budget: 1200, status: 'in-progress', startDate: '2025-10-20', deadline: '2025-12-01', progress: 65, milestone: 'Design Phase' },
   { id: '#PROJ-002', title: 'Blog Content Creation', job: '#JOB-002', client: 'Marketing Agency', freelancer: 'Jane Writer', budget: 300, status: 'in-progress', startDate: '2025-10-21', deadline: '2025-11-24', progress: 30, milestone: 'Research Phase' },
   { id: '#PROJ-003', title: 'Brand Identity', job: '#JOB-003', client: 'New Business', freelancer: 'Alex Designer', budget: 500, status: 'completed', startDate: '2025-10-15', deadline: '2025-10-25', progress: 100, milestone: 'Final Delivery' },
@@ -32,9 +32,23 @@ const mockProjects = [
   { id: '#PROJ-006', title: 'Product Demo Video', job: '#JOB-006', client: 'Gadget Company', freelancer: 'Tom Editor', budget: 400, status: 'on-hold', startDate: '2025-10-10', deadline: '2025-10-30', progress: 40, milestone: 'Rough Cut' },
 ];
 
+interface Project {
+  id: string;
+  title: string;
+  job: string;
+  client: string;
+  freelancer: string;
+  budget: number;
+  status: string;
+  startDate: string;
+  deadline: string;
+  progress: number;
+  milestone: string;
+}
+
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState(mockProjects);
-  const [filteredProjects, setFilteredProjects] = useState(mockProjects);
+  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>(mockProjects);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [freelancerFilter, setFreelancerFilter] = useState('all');
@@ -229,53 +243,56 @@ export default function ProjectsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProjects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.id}</TableCell>
-                    <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell>{project.client}</TableCell>
-                    <TableCell className="flex items-center">
-                      <User className="h-4 w-4 mr-2 text-gray-500" />
-                      {project.freelancer}
-                    </TableCell>
-                    <TableCell>{project.job}</TableCell>
-                    <TableCell>${project.budget.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Badge className={getProjectStatusColor(project.status)}>
-                        {project.status.charAt(0).toUpperCase() + project.status.replace('-', ' ').slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div>
-                        <span>{project.progress}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{project.milestone}</TableCell>
-                     <TableCell>
-                       <span className={calculateDaysLeft(project.deadline) < 0 ? 'text-red-500' : calculateDaysLeft(project.deadline) < 5 ? 'text-yellow-500' : 'text-green-500'}>
-                         {calculateDaysLeft(project.deadline) < 0 ? `${Math.abs(calculateDaysLeft(project.deadline))} days overdue` : `${calculateDaysLeft(project.deadline)} days left`}
-                       </span>
+                 {filteredProjects.map((project) => {
+                   const daysLeft = calculateDaysLeft(project.deadline);
+                   return (
+                   <TableRow key={project.id}>
+                     <TableCell className="font-medium">{project.id}</TableCell>
+                     <TableCell className="font-medium">{project.title}</TableCell>
+                     <TableCell>{project.client}</TableCell>
+                     <TableCell className="flex items-center">
+                       <User className="h-4 w-4 mr-2 text-gray-500" />
+                       {project.freelancer}
                      </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                     <TableCell>{project.job}</TableCell>
+                     <TableCell>${project.budget.toLocaleString()}</TableCell>
+                     <TableCell>
+                       <Badge className={getProjectStatusColor(project.status)}>
+                         {project.status.charAt(0).toUpperCase() + project.status.replace('-', ' ').slice(1)}
+                       </Badge>
+                     </TableCell>
+                     <TableCell>
+                       <div className="flex items-center">
+                         <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                           <div
+                             className="bg-blue-600 h-2 rounded-full"
+                             style={{ width: `${project.progress}%` }}
+                           ></div>
+                         </div>
+                         <span>{project.progress}%</span>
+                       </div>
+                     </TableCell>
+                     <TableCell>{project.milestone}</TableCell>
+                      <TableCell>
+                        <span className={daysLeft < 0 ? 'text-red-500' : daysLeft < 5 ? 'text-yellow-500' : 'text-green-500'}>
+                          {daysLeft < 0 ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
+                        </span>
+                      </TableCell>
+                     <TableCell>
+                       <div className="flex space-x-2">
+                         <Button variant="ghost" size="sm">
+                           <Eye className="h-4 w-4 mr-1" />
+                           View
+                         </Button>
+                         <Button variant="ghost" size="sm">
+                           <Edit className="h-4 w-4 mr-1" />
+                           Edit
+                         </Button>
+                       </div>
+                     </TableCell>
+                   </TableRow>
+                   );
+                 })}
               </TableBody>
             </Table>
           </div>

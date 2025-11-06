@@ -139,12 +139,18 @@ const chartConfig = {
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("30d")
+  const userSelectedRef = React.useRef(false)
 
   React.useEffect(() => {
-    if (isMobile) {
+    if (isMobile && !userSelectedRef.current) {
       setTimeRange("7d")
     }
   }, [isMobile])
+
+  const handleTimeRangeChange = (value: string) => {
+    userSelectedRef.current = true
+    setTimeRange(value)
+  }
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date)
@@ -174,7 +180,7 @@ export function ChartAreaInteractive() {
           <ToggleGroup
             type="single"
             value={timeRange}
-            onValueChange={setTimeRange}
+            onValueChange={handleTimeRangeChange}
             variant="outline"
             className="@[767px]/card:flex hidden"
           >
@@ -188,7 +194,7 @@ export function ChartAreaInteractive() {
               Last 7 days
             </ToggleGroupItem>
           </ToggleGroup>
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select value={timeRange} onValueChange={handleTimeRangeChange}>
             <SelectTrigger
               className="@[767px]/card:hidden flex w-40"
               aria-label="Select a value"
@@ -248,24 +254,24 @@ export function ChartAreaInteractive() {
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }}
+               tickFormatter={(value) => {
+                 const date = new Date(value)
+                 return date.toLocaleDateString(undefined, {
+                   month: "short",
+                   day: "numeric",
+                 })
+               }}
             />
             <ChartTooltip
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })
-                  }}
+                   labelFormatter={(value) => {
+                     return new Date(value).toLocaleDateString(undefined, {
+                       month: "short",
+                       day: "numeric",
+                     })
+                   }}
                   indicator="dot"
                 />
               }

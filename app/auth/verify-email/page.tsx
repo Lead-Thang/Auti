@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, MailCheck } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Suspense } from "react";
 
-export default function VerifyEmailPage() {
+// Component that uses useSearchParams - needs to be separate to wrap in Suspense
+function VerifyEmailContent() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -114,6 +116,17 @@ export default function VerifyEmailPage() {
     );
   }
 
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-primary/5 to-accent/5">
       <div className="absolute top-4 right-4">
@@ -186,5 +199,20 @@ export default function VerifyEmailPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-lg">Loading...</p>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

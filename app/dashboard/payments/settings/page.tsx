@@ -36,8 +36,30 @@ import {
   Info
 } from "lucide-react"
 import { toast } from "sonner"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        if (!response.ok) {
+          router.push('/login')
+          return
+        }
+        const data = await response.json()
+        if (!data.user) {
+          router.push('/login')
+        }
+      } catch (error) {
+        router.push('/login')
+      }
+    }
+    checkAuth()
+  }, [router])
   const [activeTab, setActiveTab] = useState("account")
   const [notifications, setNotifications] = useState({
     email: true,
@@ -75,19 +97,40 @@ export default function SettingsPage() {
     toast.success("Settings saved successfully!")
   }
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (password.new !== password.confirm) {
       toast.error("New passwords do not match!")
       return
     }
-    
+
     if (password.new.length < 8) {
       toast.error("New password must be at least 8 characters long!")
       return
     }
-    
-    toast.success("Password changed successfully!")
-    setPassword({ current: "", new: "", confirm: "" })
+
+    try {
+      const response = await fetch('/api/user/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: password.current,
+          newPassword: password.new,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || `Failed to change password (${response.status})`);
+        return;
+      }
+
+      toast.success("Password changed successfully!")
+      setPassword({ current: "", new: "", confirm: "" })
+    } catch (error) {
+      toast.error("Failed to change password")
+    }
   }
 
   return (

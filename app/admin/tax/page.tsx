@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
@@ -33,14 +34,14 @@ const mockTaxRecords = [
 ];
 
 export default function TaxPage() {
-  const [taxRecords, setTaxRecords] = useState(mockTaxRecords);
+  const router = useRouter();
   const [filteredTaxRecords, setFilteredTaxRecords] = useState(mockTaxRecords);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
 
   useEffect(() => {
-    let result = taxRecords;
+    let result = mockTaxRecords;
     
     if (searchTerm) {
       result = result.filter(tax => 
@@ -59,7 +60,7 @@ export default function TaxPage() {
     }
     
     setFilteredTaxRecords(result);
-  }, [searchTerm, statusFilter, countryFilter, taxRecords]);
+  }, [searchTerm, statusFilter, countryFilter]);
 
   const getCountryOptions = () => {
     const countries = [...new Set(mockTaxRecords.map(t => t.customerCountry))];
@@ -211,12 +212,12 @@ export default function TaxPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{tax.date}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    </TableCell>
+                     <TableCell>
+                       <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/tax/${tax.id}`)}>
+                         <Eye className="h-4 w-4 mr-1" />
+                         View
+                       </Button>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

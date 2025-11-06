@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Package, ShoppingCart, Users, BarChart3, CreditCard, FileText, MessageSquare, Settings, Building, User, Percent, Wallet, Shield, Mail, AlertTriangle } from 'lucide-react';
+import { Package, ShoppingCart, Users, BarChart3, CreditCard, FileText, MessageSquare, Settings, User, Percent, Wallet, Shield, Mail, AlertTriangle } from 'lucide-react';
 
 const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -25,7 +25,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-full fixed">
+    <aside className="w-64 bg-white border-r border-gray-200 h-screen fixed top-0 left-0">
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
@@ -24,12 +24,12 @@ import { Search, Eye, MessageSquare, Clock, CheckCircle, AlertCircle, User, Mail
 
 // Mock data for support tickets
 const mockTickets = [
-  { id: '#TICKET-001', subject: 'Order #ORD-001 not delivered', category: 'Order Issue', priority: 'high', status: 'open', date: '2023-10-20', user: 'John Doe', email: 'john@example.com', channel: 'email', assignedTo: 'Sarah Support', lastUpdate: '2023-10-21' },
-  { id: '#TICKET-002', subject: 'Payment not processed', category: 'Payment', priority: 'medium', status: 'in-progress', date: '2023-10-21', user: 'Jane Smith', email: 'jane@example.com', channel: 'chat', assignedTo: 'Mike Support', lastUpdate: '2023-10-21' },
-  { id: '#TICKET-003', subject: 'Product quality concern', category: 'Product', priority: 'low', status: 'resolved', date: '2023-10-19', user: 'Robert Johnson', email: 'robert@example.com', channel: 'form', assignedTo: 'Alex Support', lastUpdate: '2023-10-20' },
-  { id: '#TICKET-004', subject: 'Account access issue', category: 'Account', priority: 'high', status: 'open', date: '2023-10-22', user: 'Emily Davis', email: 'emily@example.com', channel: 'email', assignedTo: 'Unassigned', lastUpdate: '2023-10-22' },
-  { id: '#TICKET-005', subject: 'Freelancer dispute', category: 'Freelance', priority: 'high', status: 'in-progress', date: '2023-10-20', user: 'Michael Wilson', email: 'michael@example.com', channel: 'form', assignedTo: 'Emma Support', lastUpdate: '2023-10-21' },
-  { id: '#TICKET-006', subject: 'Refund request', category: 'Payment', priority: 'medium', status: 'resolved', date: '2023-10-18', user: 'Sarah Brown', email: 'sarah@example.com', channel: 'chat', assignedTo: 'Chris Support', lastUpdate: '2023-10-19' },
+  { id: '#TICKET-001', subject: 'Order #ORD-001 not delivered', category: 'Order Issue', priority: 'high', status: 'open', date: '2025-11-01', user: 'John Doe', email: 'john@example.com', channel: 'email', assignedTo: 'Sarah Support', lastUpdate: '2025-11-02' },
+  { id: '#TICKET-002', subject: 'Payment not processed', category: 'Payment', priority: 'medium', status: 'in-progress', date: '2025-11-02', user: 'Jane Smith', email: 'jane@example.com', channel: 'chat', assignedTo: 'Mike Support', lastUpdate: '2025-11-02' },
+  { id: '#TICKET-003', subject: 'Product quality concern', category: 'Product', priority: 'low', status: 'resolved', date: '2025-10-30', user: 'Robert Johnson', email: 'robert@example.com', channel: 'form', assignedTo: 'Alex Support', lastUpdate: '2025-10-31' },
+  { id: '#TICKET-004', subject: 'Account access issue', category: 'Account', priority: 'high', status: 'open', date: '2025-11-03', user: 'Emily Davis', email: 'emily@example.com', channel: 'email', assignedTo: 'Unassigned', lastUpdate: '2025-11-03' },
+  { id: '#TICKET-005', subject: 'Freelancer dispute', category: 'Freelance', priority: 'high', status: 'in-progress', date: '2025-11-01', user: 'Michael Wilson', email: 'michael@example.com', channel: 'form', assignedTo: 'Emma Support', lastUpdate: '2025-11-02' },
+  { id: '#TICKET-006', subject: 'Refund request', category: 'Payment', priority: 'medium', status: 'resolved', date: '2025-10-29', user: 'Sarah Brown', email: 'sarah@example.com', channel: 'chat', assignedTo: 'Chris Support', lastUpdate: '2025-10-30' },
 ];
 
 export default function SupportPage() {
@@ -65,6 +65,23 @@ export default function SupportPage() {
     
     setFilteredTickets(result);
   }, [searchTerm, statusFilter, priorityFilter, categoryFilter, tickets]);
+
+  const agentStats = useMemo(() => {
+    const stats: Record<string, { name: string; openTickets: number }> = {};
+
+    filteredTickets.forEach(ticket => {
+      if (ticket.assignedTo !== 'Unassigned') {
+        if (!stats[ticket.assignedTo]) {
+          stats[ticket.assignedTo] = { name: ticket.assignedTo, openTickets: 0 };
+        }
+        if (ticket.status === 'open' || ticket.status === 'in-progress') {
+          stats[ticket.assignedTo].openTickets++;
+        }
+      }
+    });
+
+    return Object.values(stats);
+  }, [filteredTickets]);
 
   const formatStatus = (status: string) => {
     return status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -130,7 +147,7 @@ export default function SupportPage() {
 
   const openTickets = filteredTickets.filter(t => t.status === 'open').length;
   const inProgressTickets = filteredTickets.filter(t => t.status === 'in-progress').length;
-  const resolvedTickets = filteredTickets.filter(t => t.status === 'resolved').length;
+  const resolvedTodayCount = filteredTickets.filter(t => t.status === 'resolved' && t.lastUpdate && new Date(t.lastUpdate).toDateString() === new Date().toDateString()).length;
 
   return (
     <div className="space-y-6">
@@ -169,10 +186,10 @@ export default function SupportPage() {
             <CardTitle className="text-sm font-medium">Resolved Today</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{resolvedTickets}</div>
-            <p className="text-xs text-muted-foreground">Issues resolved</p>
-          </CardContent>
+           <CardContent>
+             <div className="text-2xl font-bold">{resolvedTodayCount}</div>
+             <p className="text-xs text-muted-foreground">Issues resolved</p>
+           </CardContent>
         </Card>
       </div>
 
@@ -313,22 +330,19 @@ export default function SupportPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {['Sarah Support', 'Mike Support', 'Alex Support', 'Emma Support'].map((agent, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+            {agentStats.map((agent) => (
+              <div key={agent.name} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center">
                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10 mr-3" />
                   <div>
-                    <div className="font-medium">{agent}</div>
+                    <div className="font-medium">{agent.name}</div>
                     <div className="text-sm text-gray-500">
-                      {index === 0 ? '2 open tickets' : 
-                       index === 1 ? '1 open ticket' : 
-                       index === 2 ? '1 open ticket' : 
-                       '2 open tickets'}
+                      {agent.openTickets} open ticket{agent.openTickets !== 1 ? 's' : ''}
                     </div>
                   </div>
                 </div>
-                <Badge variant={index === 0 ? 'default' : 'secondary'}>
-                  {index === 0 ? 'Active' : 'Available'}
+                <Badge variant={agent.openTickets > 0 ? 'default' : 'secondary'}>
+                  {agent.openTickets > 0 ? 'Active' : 'Available'}
                 </Badge>
               </div>
             ))}
