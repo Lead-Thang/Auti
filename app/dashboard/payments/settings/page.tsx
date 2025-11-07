@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,14 +36,16 @@ import {
   Info
 } from "lucide-react"
 import { toast } from "sonner"
-import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Spinner from "@/components/Spinner"
 
 export default function SettingsPage() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
+      setIsLoading(true)
       try {
         const response = await fetch('/api/auth/session')
         if (!response.ok) {
@@ -53,9 +55,13 @@ export default function SettingsPage() {
         const data = await response.json()
         if (!data.user) {
           router.push('/login')
+        } else {
+          setIsLoading(false)
         }
       } catch (error) {
         router.push('/login')
+      } finally {
+        setIsLoading(false)
       }
     }
     checkAuth()
@@ -92,12 +98,15 @@ export default function SettingsPage() {
     new: false,
     confirm: false
   })
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const handleSaveSettings = () => {
     toast.success("Settings saved successfully!")
   }
 
   const handlePasswordChange = async () => {
+    if (isChangingPassword) return
+
     if (password.new !== password.confirm) {
       toast.error("New passwords do not match!")
       return
@@ -107,6 +116,8 @@ export default function SettingsPage() {
       toast.error("New password must be at least 8 characters long!")
       return
     }
+
+    setIsChangingPassword(true)
 
     try {
       const response = await fetch('/api/user/password', {
@@ -130,7 +141,20 @@ export default function SettingsPage() {
       setPassword({ current: "", new: "", confirm: "" })
     } catch (error) {
       toast.error("Failed to change password")
+    } finally {
+      setIsChangingPassword(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2">
+          <Spinner className="w-6 h-6" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -289,12 +313,21 @@ export default function SettingsPage() {
                 </div>
               </div>
               
-              <div className="pt-4">
-                <Button onClick={handlePasswordChange}>
-                  <Lock className="w-4 h-4 mr-2" />
-                  Change Password
-                </Button>
-              </div>
+               <div className="pt-4">
+                 <Button onClick={handlePasswordChange} disabled={isChangingPassword} aria-busy={isChangingPassword}>
+                   {isChangingPassword ? (
+                     <>
+                       <Spinner className="w-4 h-4 mr-2" />
+                       Changing...
+                     </>
+                   ) : (
+                     <>
+                       <Lock className="w-4 h-4 mr-2" />
+                       Change Password
+                     </>
+                   )}
+                 </Button>
+               </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -127,7 +127,7 @@ export default function PaymentsNav({ user: propUser }: PaymentsNavProps = {}) {
              <div className="flex items-center gap-3">
                <Avatar>
                  <AvatarImage src={user?.avatar} />
-                 <AvatarFallback>{(user as any)?.initials || getInitials(user?.name)}</AvatarFallback>
+                  <AvatarFallback>{user?.initials || getInitials(user?.name)}</AvatarFallback>
                </Avatar>
                <div>
                  <p className="font-medium">{user?.name || "Guest"}</p>

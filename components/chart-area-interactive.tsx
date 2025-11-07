@@ -148,8 +148,11 @@ export function ChartAreaInteractive() {
   }, [isMobile])
 
   const handleTimeRangeChange = (value: string) => {
+    if (!value) return
+    const normalizedValue = value.trim()
+    if (!normalizedValue) return
     userSelectedRef.current = true
-    setTimeRange(value)
+    setTimeRange(normalizedValue)
   }
 
   const filteredData = chartData.filter((item) => {

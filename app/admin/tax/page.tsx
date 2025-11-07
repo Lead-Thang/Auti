@@ -25,12 +25,12 @@ import { Search, Eye, FileText, DollarSign, TrendingUp, TrendingDown, Settings }
 
 // Mock data for tax records
 const mockTaxRecords = [
-  { id: '#TAX-001', orderId: '#ORD-001', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 9.72, total: 124.09, date: '2023-10-20', status: 'filed' },
-  { id: '#TAX-002', orderId: '#ORD-002', customerCountry: 'Canada', sellerCountry: 'USA', taxRate: 5.0, taxAmount: 4.27, total: 89.76, date: '2023-10-21', status: 'pending' },
-  { id: '#TAX-003', orderId: '#ORD-003', customerCountry: 'UK', sellerCountry: 'USA', taxRate: 20.0, taxAmount: 25.04, total: 150.23, date: '2023-10-22', status: 'pending' },
-  { id: '#TAX-004', orderId: '#ORD-004', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 16.40, total: 209.39, date: '2023-10-19', status: 'filed' },
-  { id: '#TAX-005', orderId: '#ORD-005', customerCountry: 'Germany', sellerCountry: 'USA', taxRate: 19.0, taxAmount: 10.39, total: 65.06, date: '2023-10-20', status: 'pending' },
-  { id: '#TAX-006', orderId: '#ORD-006', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 15.55, total: 198.54, date: '2023-10-22', status: 'pending' },
+  { id: 'TAX-001', orderId: '#ORD-001', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 9.72, total: 124.09, date: '2023-10-20', status: 'filed' },
+  { id: 'TAX-002', orderId: '#ORD-002', customerCountry: 'Canada', sellerCountry: 'USA', taxRate: 5.0, taxAmount: 4.27, total: 89.76, date: '2023-10-21', status: 'pending' },
+  { id: 'TAX-003', orderId: '#ORD-003', customerCountry: 'UK', sellerCountry: 'USA', taxRate: 20.0, taxAmount: 25.04, total: 150.23, date: '2023-10-22', status: 'pending' },
+  { id: 'TAX-004', orderId: '#ORD-004', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 16.40, total: 209.39, date: '2023-10-19', status: 'filed' },
+  { id: 'TAX-005', orderId: '#ORD-005', customerCountry: 'Germany', sellerCountry: 'USA', taxRate: 19.0, taxAmount: 10.39, total: 65.06, date: '2023-10-20', status: 'pending' },
+  { id: 'TAX-006', orderId: '#ORD-006', customerCountry: 'USA', sellerCountry: 'USA', taxRate: 8.5, taxAmount: 15.55, total: 198.54, date: '2023-10-22', status: 'pending' },
 ];
 
 export default function TaxPage() {
@@ -199,7 +199,7 @@ export default function TaxPage() {
               <TableBody>
                 {filteredTaxRecords.map((tax) => (
                   <TableRow key={tax.id}>
-                    <TableCell className="font-medium">{tax.id}</TableCell>
+                     <TableCell className="font-medium">#{tax.id}</TableCell>
                     <TableCell>{tax.orderId}</TableCell>
                     <TableCell>{tax.customerCountry}</TableCell>
                     <TableCell>{tax.sellerCountry}</TableCell>
@@ -212,12 +212,12 @@ export default function TaxPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{tax.date}</TableCell>
-                     <TableCell>
-                       <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/tax/${tax.id}`)}>
-                         <Eye className="h-4 w-4 mr-1" />
-                         View
-                       </Button>
-                     </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/tax/${encodeURIComponent(tax.id)}`)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

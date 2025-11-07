@@ -120,7 +120,7 @@ export default function DisputesPage() {
   const handleEscalateDispute = async (disputeId: string) => {
     setEscalatingDisputes(prev => new Map(prev.set(disputeId, true)));
     try {
-      const response = await fetch(`/api/dispute/${disputeId}`, {
+      const response = await fetch(`/api/dispute/${encodeURIComponent(disputeId)}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ export default function DisputesPage() {
     setShowMediationModal(false);
 
     // Navigate to chat mediation page with dispute context
-    router.push(`/admin/disputes/${selectedDisputeId}/chat-mediation`);
+    router.push(`/admin/disputes/${encodeURIComponent(selectedDisputeId)}/chat-mediation`);
 
     toast({
       title: "Starting Chat Mediation",
@@ -182,7 +182,7 @@ export default function DisputesPage() {
     setShowMediationModal(false);
 
     // Navigate to evidence review page
-    router.push(`/admin/disputes/${selectedDisputeId}/evidence`);
+    router.push(`/admin/disputes/${encodeURIComponent(selectedDisputeId)}/evidence`);
 
     toast({
       title: "Reviewing Evidence",
@@ -197,7 +197,7 @@ export default function DisputesPage() {
     setShowMediationModal(false);
 
     // Navigate to contact parties page
-    router.push(`/admin/disputes/${selectedDisputeId}/contact`);
+    router.push(`/admin/disputes/${encodeURIComponent(selectedDisputeId)}/contact`);
 
     toast({
       title: "Contacting Parties",
@@ -212,7 +212,7 @@ export default function DisputesPage() {
     setShowMediationModal(false);
 
     // Navigate to resolution proposal page
-    router.push(`/admin/disputes/${selectedDisputeId}/resolution`);
+    router.push(`/admin/disputes/${encodeURIComponent(selectedDisputeId)}/resolution`);
 
     toast({
       title: "Proposing Resolution",
@@ -405,16 +405,19 @@ export default function DisputesPage() {
                             <Shield className="h-4 w-4 mr-1" />
                             Mediation Tools
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEscalateDispute(dispute.id)}
-                            disabled={escalatingDisputes.get(dispute.id) || dispute.status === 'escalated'}
-                          >
-                            {escalatingDisputes.get(dispute.id) && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                            <AlertTriangle className="h-4 w-4 mr-1" />
-                            Escalate
-                          </Button>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleEscalateDispute(dispute.id)}
+                             disabled={escalatingDisputes.get(dispute.id) || dispute.status === 'escalated'}
+                           >
+                             {escalatingDisputes.get(dispute.id) ? (
+                               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                             ) : (
+                               <AlertTriangle className="h-4 w-4 mr-1" />
+                             )}
+                             Escalate
+                           </Button>
                         </div>
                       </TableCell>
                   </TableRow>

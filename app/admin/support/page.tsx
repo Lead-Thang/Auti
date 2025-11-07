@@ -69,7 +69,7 @@ export default function SupportPage() {
   const agentStats = useMemo(() => {
     const stats: Record<string, { name: string; openTickets: number }> = {};
 
-    filteredTickets.forEach(ticket => {
+    tickets.forEach(ticket => {
       if (ticket.assignedTo !== 'Unassigned') {
         if (!stats[ticket.assignedTo]) {
           stats[ticket.assignedTo] = { name: ticket.assignedTo, openTickets: 0 };
@@ -81,7 +81,7 @@ export default function SupportPage() {
     });
 
     return Object.values(stats);
-  }, [filteredTickets]);
+  }, [tickets]);
 
   const formatStatus = (status: string) => {
     return status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');

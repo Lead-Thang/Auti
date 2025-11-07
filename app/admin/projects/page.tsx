@@ -257,9 +257,9 @@ export default function ProjectsPage() {
                      <TableCell>{project.job}</TableCell>
                      <TableCell>${project.budget.toLocaleString()}</TableCell>
                      <TableCell>
-                       <Badge className={getProjectStatusColor(project.status)}>
-                         {project.status.charAt(0).toUpperCase() + project.status.replace('-', ' ').slice(1)}
-                       </Badge>
+                        <Badge className={getProjectStatusColor(project.status)}>
+                          {project.status.split(/[-\s]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
+                        </Badge>
                      </TableCell>
                      <TableCell>
                        <div className="flex items-center">

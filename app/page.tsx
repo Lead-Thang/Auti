@@ -215,9 +215,9 @@ export default function LandingPage() {
               <Link href="/community" className="text-white hover:text-blue-300 text-sm px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors">
                 Community
               </Link>
-              <Link href="/careers" className="text-white hover:text-blue-300 text-sm px-3 py-1.5 rounded-full mr-36 hover:bg-white/10 transition-colors">
-                Careers
-              </Link>
+               <Link href="/careers" className="text-white hover:text-blue-300 text-sm px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors">
+                 Careers
+               </Link>
               {isLoaded && isSignedIn ? (
                 <Link href="/dashboard">
                   <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full px-4 py-2 text-sm">
@@ -243,7 +243,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 lg:py-100">
+       <section className="relative overflow-hidden py-32 lg:py-[400px]">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-600/20 via-purple-600/10 to-transparent" />
         {/* Raining Stars Effect with Trails */}
         <div className="absolute inset-0 overflow-hidden">

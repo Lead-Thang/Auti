@@ -79,6 +79,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     // Update dispute status to escalated
+    // Fetch dispute first to validate existence and status
+    const dispute = await db.dispute.findUnique({
+      where: { id: disputeId },
+    })
+
+    if (!dispute) {
+      return NextResponse.json({ error: "Dispute not found" }, { status: 404 })
+    }
+
+    if (dispute.status === 'escalated') {
+      return NextResponse.json({ error: "Dispute is already escalated" }, { status: 400 })
+    }
+
+    if (dispute.status === 'resolved') {
+      return NextResponse.json({ error: "Cannot escalate a resolved dispute" }, { status: 400 })
+    }
+
+    // Update dispute status to escalated
     const updatedDispute = await db.dispute.update({
       where: { id: disputeId },
       data: {
