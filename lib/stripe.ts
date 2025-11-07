@@ -1,14 +1,17 @@
 
 import { Stripe } from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is required')
-}
+// Export a function that creates Stripe instance when called
+export function getStripeInstance(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is required')
+  }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-09-30.clover',
-  typescript: true,
-})
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-09-30.clover',
+    typescript: true,
+  });
+}
 
 export async function createEscrowPayment(
   amountCents: number,
@@ -19,8 +22,17 @@ export async function createEscrowPayment(
   }
 ) {
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is required')
+    }
+    
+    const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-09-30.clover',
+      typescript: true,
+    });
+
     // Create PaymentIntent with manual capture (escrow)
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await stripeInstance.paymentIntents.create({
       amount: amountCents,
       currency: currency.toLowerCase(),
       capture_method: 'manual', // This holds funds in escrow
@@ -54,8 +66,17 @@ export async function releaseEscrowFunds(
   amountToCapture?: number
 ) {
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is required')
+    }
+    
+    const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-09-30.clover',
+      typescript: true,
+    });
+    
     // Capture (release) the funds from escrow
-    const paymentIntent = await stripe.paymentIntents.capture(
+    const paymentIntent = await stripeInstance.paymentIntents.capture(
       paymentIntentId,
       amountToCapture ? { amount_to_capture: amountToCapture } : undefined
     )
@@ -77,8 +98,17 @@ export async function refundEscrow(
   amountCents?: number
 ) {
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is required')
+    }
+    
+    const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-09-30.clover',
+      typescript: true,
+    });
+
     // Refund the payment intent (return funds to customer)
-    const refund = await stripe.refunds.create({
+    const refund = await stripeInstance.refunds.create({
       payment_intent: paymentIntentId,
       amount: amountCents,
     })
@@ -98,7 +128,16 @@ export async function refundEscrow(
 
 export async function getPaymentIntentStatus(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is required')
+    }
+    
+    const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-09-30.clover',
+      typescript: true,
+    });
+    
+    const paymentIntent = await stripeInstance.paymentIntents.retrieve(paymentIntentId)
     return {
       status: paymentIntent.status,
       amount: paymentIntent.amount,
